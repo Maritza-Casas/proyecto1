@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador de Contraseñas Seguras</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .password-strength {
+            height: 8px;
+            border-radius: 4px;
+            transition: width 0.3s ease-in-out;
+        }
+        .weak { background-color: #ff4d4d; width: 25%; }
+        .medium { background-color: #ffcc00; width: 50%; }
+        .strong { background-color: #66ff66; width: 75%; }
+        .very-strong { background-color: #00b300; width: 100%; }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans p-8">
+    <div class="max-w-md mx-auto bg-white rounded-lg shadow-lg p-6">
+        <div class="text-center mb-4">
+            <h1 class="text-2xl font-bold text-gray-700">Generador de Contraseñas Seguras</h1>
+            <p class="text-gray-500">Crea contraseñas fuertes con facilidad.</p>
+        </div>
+
+        <div class="mb-4">
+            <label for="length" class="block text-gray-600">Longitud de la contraseña:</label>
+            <input type="number" id="length" class="w-full p-2 border rounded mt-1" value="16" min="8" max="32">
+        </div>
+
+        <div class="mb-4">
+            <label class="flex items-center">
+                <input type="checkbox" id="includeSpecial" class="mr-2"> Incluir caracteres especiales
+            </label>
+        </div>
+
+        <div class="mb-4">
+            <label class="flex items-center">
+                <input type="checkbox" id="includeNumbers" class="mr-2"> Incluir números
+            </label>
+        </div>
+
+        <button id="generate" class="w-full bg-blue-500 text-white py-2 rounded mt-4 hover:bg-blue-600">Generar Contraseña</button>
+
+        <div id="password-container" class="mt-4">
+            <input type="text" id="password" class="w-full p-2 border rounded mt-1 text-gray-700" readonly>
+            <button id="copy" class="mt-2 bg-green-500 text-white py-1 px-3 rounded hover:bg-green-600">Copiar</button>
+        </div>
+
+        <div class="mt-4">
+            <div class="text-gray-600">Fortaleza de la Contraseña:</div>
+            <div id="strength-bar" class="password-strength mt-2"></div>
+            <div id="strength-text" class="mt-1 text-sm text-gray-600">Débil</div>
+        </div>
+
+        <div class="mt-4 text-sm text-gray-500">
+            <p>Recomendación: No reutilices contraseñas.</p>
+        </div>
+    </div>
+
+    <script>
+        function generatePassword(length = 16, includeSpecial = false, includeNumbers = false) {
+            const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+            const numbers = "0123456789";
+            const specialChars = "!@#$%^&*()-_=+[]{}|;:'\",.<>?/";
+
+            let characters = letters;
+            if (includeNumbers) characters += numbers;
+            if (includeSpecial) characters += specialChars;
+
+            let password = '';
+            for (let i = 0; i < length; i++) {
+                password += characters.charAt(Math.floor(Math.random() * characters.length));
+            }
+            return password;
+        }
+
+        function evaluateStrength(password) {
+            const lengthCriteria = password.length >= 12;
+            const upperCaseCriteria = /[A-Z]/.test(password);
+            const numberCriteria = /\d/.test(password);
+            const specialCharCriteria = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+
+            let strength = 0;
+            if (lengthCriteria) strength++;
+            if (upperCaseCriteria) strength++;
+            if (numberCriteria) strength++;
+            if (specialCharCriteria) strength++;
+
+            return strength;
+        }
+
+        function updateStrengthBar(strength) {
+            const strengthBar = document.getElementById('strength-bar');
+            const strengthText = document.getElementById('strength-text');
+            switch (strength) {
+                case 1:
+                    strengthBar.className = "weak";
+                    strengthText.textContent = "Débil";
+                    break;
+                case 2:
+                    strengthBar.className = "medium";
+                    strengthText.textContent = "Media";
+                    break;
+                case 3:
+                    strengthBar.className = "strong";
+                    strengthText.textContent = "Fuerte";
+                    break;
+                case 4:
+                    strengthBar.className = "very-strong";
+                    strengthText.textContent = "Muy Fuerte";
+                    break;
+                default:
+                    strengthBar.className = "";
+                    strengthText.textContent = "Débil";
+            }
+        }
+
+        document.getElementById('generate').addEventListener('click', () => {
+            const length = document.getElementById('length').value;
+            const includeSpecial = document.getElementById('includeSpecial').checked;
+            const includeNumbers = document.getElementById('includeNumbers').checked;
+
+            const password = generatePassword(length, includeSpecial, includeNumbers);
+            document.getElementById('password').value = password;
+
+            const strength = evaluateStrength(password);
+            updateStrengthBar(strength);
+        });
+
+        document.getElementById('copy').addEventListener('click', () => {
+            const passwordField = document.getElementById('password');
+            passwordField.select();
+            document.execCommand('copy');
+            alert('Contraseña copiada al portapapeles');
+        });
+    </script>
+</body>
+</html>
